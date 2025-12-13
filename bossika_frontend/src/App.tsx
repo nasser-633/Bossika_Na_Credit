@@ -6,6 +6,8 @@ import LoginPage from '@/pages/login';
 import RegisterPage from '@/pages/register';
 import OnboardingPage from '@/pages/onboarding';
 import DashboardPage from '@/pages/dashboard';
+import LoanOverviewPage from '@/pages/loan-overview';
+import LoanDetailsPage from '@/pages/loan-details';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,6 +43,22 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loan-overview"
+              element={
+                <ProtectedRoute>
+                  <LoanOverviewPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/loan-details"
+              element={
+                <ProtectedRoute>
+                  <LoanDetailsPage />
                 </ProtectedRoute>
               }
             />
