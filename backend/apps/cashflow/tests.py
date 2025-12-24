@@ -1,3 +1,3 @@
-from django.test import TestCase
+"""Placeholder tests for cashflow app."""
 
-# Create your tests here.
+# No tests yet.

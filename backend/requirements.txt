@@ -9,3 +9,6 @@ psycopg2-binary==2.9.11
 PyJWT==2.10.1
 python-dotenv==1.2.1
 sqlparse==0.5.3
+drf-yasg==1.21.6
+coreapi==2.3.3
+coreschema==0.0.4

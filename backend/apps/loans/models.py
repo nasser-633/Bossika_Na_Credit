@@ -4,13 +4,15 @@ from apps.users.models import TimeStampedModel
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 
+
 class BusinessLoans(TimeStampedModel):
 
     class LoanStatus(models.TextChoices):
         PAID = 'PAID', 'paid'
         PENDING = 'PENDING', 'pending'
 
-    class Category(models.TextChoices):  #will help give targetted advice like inventory loans are too high
+    # Category choices help provide targeted advice (e.g. inventory loans)
+    class Category(models.TextChoices):
         WORKING_CAPITAL = 'WORKING_CAPITAL', 'working_capital'
         INVENTORY = 'INVENTORY', 'inventory'
         EQUIPMENT = 'EQUIPMENT', 'equipment'
@@ -36,6 +38,7 @@ class BusinessLoans(TimeStampedModel):
     principal_amount = models.DecimalField(max_digits=10, decimal_places=2)
     interest_rate = models.FloatField(null=True)  # percent decimal e.g. 0.12
     loan_period = models.FloatField(null=False)  # years
+    installments_per_month = models.IntegerField(null=True, blank=True)
 
     date_of_loan = models.DateField(null=True, blank=True)
 
@@ -45,11 +48,20 @@ class BusinessLoans(TimeStampedModel):
         default=LoanStatus.PENDING
     )
 
-    #caclulates total amount based on simple interest method
+    # calculates total amount based on simple interest method
     @property
     def total_amount(self):
         if self.interest_rate:
-           return self.principal_amount + (self.principal_amount * Decimal(self.interest_rate) * Decimal(self.loan_period))
+            return (
+                self.principal_amount
+                + (self.principal_amount * Decimal(self.interest_rate) * Decimal(self.loan_period))
+            )
+
+    @property
+    def interest_amount(self):
+        if self.interest_rate:
+            return self.principal_amount * Decimal(self.interest_rate) * Decimal(self.loan_period)
+        return Decimal('0.00')
 
     @property
     def balance(self):
@@ -69,8 +81,8 @@ class LoanRepayment(TimeStampedModel):
 
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
     date_paid = models.DateField()
-    
-    
+    payment_is_late = models.BooleanField(default=False)
+    late_fee_charged = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def clean(self):
         """
@@ -101,4 +113,5 @@ class LoanRepayment(TimeStampedModel):
         """
         self.full_clean()   # ← runs clean() and all field validations
         return super().save(*args, **kwargs)
+
 

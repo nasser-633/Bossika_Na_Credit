@@ -3,6 +3,7 @@ from apps.business.models import BusinessProfile
 from apps.users.models import TimeStampedModel
 from django.db import transaction
 
+
 class CashFlow(TimeStampedModel):
     MONTH_CHOICES = (
         ('JAN', 'January'),
@@ -19,7 +20,6 @@ class CashFlow(TimeStampedModel):
         ('DEC', 'December'),
     )
 
-   
     CASHFLOW_TYPES = (
         ('INCOME', 'Income'),
         ('EXPENSE', 'Expense'),
@@ -45,7 +45,7 @@ class CashFlow(TimeStampedModel):
         null=True,
         blank=True
     )
-    
+
     year = models.IntegerField(null=True, blank=True)
 
     is_daily_cashflow = models.BooleanField(
@@ -67,8 +67,12 @@ class CashFlow(TimeStampedModel):
     )
 
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    balance = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-
+    balance = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
 
     date_recorded = models.DateField(null=True, blank=True)
 
@@ -81,9 +85,8 @@ class CashFlow(TimeStampedModel):
         if self.cashflow_type in ['EXPENSE', 'LOAN_REPAYMENT']:
             return -self.amount
         return self.amount
-   
-   
-    # compute balance automatically 
+
+    # compute balance automatically
     def save(self, *args, **kwargs):
         with transaction.atomic():
             if not self.balance:

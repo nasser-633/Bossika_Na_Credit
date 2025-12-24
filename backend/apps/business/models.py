@@ -59,8 +59,6 @@ class BusinessProfile(TimeStampedModel):
     def __str__(self):
         return self.business_name or "Unnamed Business"
 
-
-     
     @property
     def total_net_cash_flow(self):
         result = self.cashflows.aggregate(

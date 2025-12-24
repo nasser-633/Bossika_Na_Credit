@@ -23,14 +23,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY') or \
+    'dev-insecure-secret-key-for-local-testing'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost").split(",")
+_allowed_env = os.environ.get("ALLOWED_HOSTS", "")
+# if not set, allow common local hosts for development
+if _allowed_env:
+    ALLOWED_HOSTS = [h.strip() for h in _allowed_env.split(',') if h.strip()]
+else:
+    # include the test client host so Django test client and internal
+    # requests (e.g. swagger/testserver) don't raise DisallowedHost
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'testserver']
 
-CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+_cors_env = os.getenv("CORS_ALLOWED_ORIGINS", "")
+# split and strip, ignore empty values to avoid SystemCheckError E013
+CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_env.split(",") if o.strip()]
 CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
@@ -45,11 +55,13 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_yasg',
     'apps.users',
     'apps.business',
     'apps.loans',
     'apps.cashflow',
-    'apps.advice'
+    'apps.advice',
+    'apps.core',
 ]
 
 MIDDLEWARE = [
@@ -80,7 +92,8 @@ TEMPLATES = [
     },
 ]
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # Use a safe paginator that does not require `coreapi` for schema generation
+    'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.SafePageNumberPagination',
     'PAGE_SIZE': 100,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -95,7 +108,7 @@ WSGI_APPLICATION = 'bossika_backend.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
+        default=os.getenv("DATABASE_URL", f"sqlite:///{str(BASE_DIR / 'db.sqlite3')}") ,
         conn_max_age=600
     )
 }
@@ -141,3 +154,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'users.User'
+# Use Django's default user model unless a custom one is implemented.
+# The project currently uses `django.contrib.auth.models.User` in serializers/views.
+# Setting to 'auth.User' ensures the default model is used and avoids startup errors.
+AUTH_USER_MODEL = 'auth.User'

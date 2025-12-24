@@ -1,14 +1,17 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
+
 from apps.business.models import BusinessProfile
-from apps.cashflow.models import CashFlow  # adjust path to your app
-from apps.loans.models import BusinessLoans  # adjust path
+from apps.cashflow.models import CashFlow
+from apps.loans.models import BusinessLoans
+
 
 class Command(BaseCommand):
     help = "Insert dummy data for users, businesses, cashflow and loans"
 
     def handle(self, *args, **options):
-
+        # NOTE: These passwords are only for development/testing.
+        # Do not use them in production.
         users_data = [
             {
                 "email": "bossika@gmail.com",
@@ -19,9 +22,7 @@ class Command(BaseCommand):
                 "email": "james@gmail.com",
                 "password": "456",
                 "username": "james",
-            }
-             # WARNING: The passwords below are for development/testing only.
-        # NEVER use these passwords in production. Use strong, unique passwords for real users.
+            },
         ]
 
         cashflow_data = [
@@ -30,22 +31,20 @@ class Command(BaseCommand):
                 "category": "SALES",
                 "amount": 6000.00,
                 "month": "JAN",
-                "date_recorded" : "2025-01-12"
+                "date_recorded": "2025-01-12",
             },
             {
                 "cashflow_type": "EXPENSE",
                 "category": "EMPLOYEE_SALARY",
                 "amount": 2000.00,
                 "month": "JAN",
-                "date_recorded" : "2025-01-12"
-
+                "date_recorded": "2025-01-12",
             },
             {
                 "cashflow_type": "LOAN_INFLOW",
                 "amount": 1000.00,
                 "month": "JAN",
-                "date_recorded" : "2025-01-12"
-
+                "date_recorded": "2025-01-12",
             },
         ]
 
@@ -54,17 +53,14 @@ class Command(BaseCommand):
                 "principal_amount": 1000.00,
                 "interest_rate": 0.1,
                 "loan_period": 1,
-                "lender": "Equity Bank"
-            }
+                "lender": "Equity Bank",
+            },
         ]
 
         for u in users_data:
-
-            user, created = User.objects.get_or_create(
+            user, _ = User.objects.get_or_create(
                 email=u["email"],
-                defaults={
-                    "username": u["username"]
-                }
+                defaults={"username": u["username"]},
             )
 
             # Set password correctly (hashing)
@@ -75,17 +71,17 @@ class Command(BaseCommand):
             business1 = BusinessProfile.objects.create(
                 user=user,
                 business_name=f"{u['username']}'s First Business",
-                size='0-10',
-                business_type='SERVICE',
-                operation_period=1
+                size="0-10",
+                business_type="SERVICE",
+                operation_period=1,
             )
 
             business2 = BusinessProfile.objects.create(
                 user=user,
                 business_name=f"{u['username']}'s Second Business",
-                size='0-10',
-                business_type='RETAIL',
-                operation_period=2
+                size="0-10",
+                business_type="RETAIL",
+                operation_period=2,
             )
 
             # Seed cashflow for business1
@@ -96,7 +92,7 @@ class Command(BaseCommand):
                     category=cf.get("category"),
                     amount=cf["amount"],
                     month=cf["month"],
-                    date_recorded =cf['date_recorded']
+                    date_recorded=cf["date_recorded"],
                 )
 
             # Seed loans for business2
@@ -110,4 +106,5 @@ class Command(BaseCommand):
                     category="WORKING_CAPITAL",
                 )
 
-        self.stdout.write(self.style.SUCCESS("Dummy data inserted successfully!"))
+        message = "Dummy data inserted successfully!"
+        self.stdout.write(self.style.SUCCESS(message))
