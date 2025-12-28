@@ -47,11 +47,12 @@ router.register(r'loan-repayments', LoanRepaymentViewSet, basename='loan-repayme
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # consolidated router for API root
     path('api/', include(router.urls)),
-    path('api/auth/register/', RegisterAPIView.as_view(), name='register'),
+
+    # auth token endpoints
     path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/business/<int:pk>/health/', BusinessHealthAPIView.as_view(), name='business-health'),
 
     # Swagger
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
